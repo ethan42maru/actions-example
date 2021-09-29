@@ -32,4 +32,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
       - name: Docker Test
-        run: echo "docker ${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
+        run: |
+          echo "docker ${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
+          echo "docker ${{ fromJSON(steps.meta.outputs.json).tags[0].split(':')[1] }}"
+          
