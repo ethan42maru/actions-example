@@ -1,0 +1,35 @@
+name: Regex Test
+
+on:
+  push:
+    tags: [ 'v*.*.*' ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: version
+        with:
+          text: ${{ github.ref }}
+          regex: 'v(\d+.\d+.\d+)$'
+      - name: Test
+        run: echo '${{ steps.version.outputs.group1 }}'
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: 42maruchatbot.azurecr.io/chatbot-api
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+      - name: Docker Test
+        run: echo "docker ${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
